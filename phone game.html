@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>哥哥的測試</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap');
+    body {
+      background-color: #ffd6e9;
+      color: #a30052;
+      font-family: 'Homemade Apple', cursive;
+      text-align: center;
+      padding: 50px;
+      position: relative;
+      transition: background-color 1s, color 1s;
+      overflow: hidden;
+    }
+    /* 老电视扫描线效果 */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0,0,0,0.05),
+        rgba(0,0,0,0.05) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      animation: tvFlicker 1s infinite;
+      z-index: 5;
+    }
+    @keyframes tvFlicker {
+      0% { opacity: 0.7; }
+      50% { opacity: 0.9; }
+      100% { opacity: 0.7; }
+    }
+    /* 屏幕闪烁覆盖层 */
+    #flashOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-image: url('https://as2.ftcdn.net/v2/jpg/01/38/06/91/1000_F_138069152_qLMqnGyO8FIFlYySSz7btd9foo5aZrSG.jpg');
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      z-index: 30;
+      transition: opacity 0.1s;
+    }
+    .container {
+      background: rgba(255,255,255,0.7);
+      padding: 20px;
+      border-radius: 15px;
+      display: inline-block;
+      position: relative;
+      z-index: 10;
+      transition: background 1s;
+    }
+    h1 {
+      font-size: 2em;
+    }
+    button {
+      background-color: #ff80bf;
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      font-size: 1.2em;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 10px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #e60073;
+    }
+    .message {
+      margin-top: 20px;
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+    /* 结束游戏按钮容器 */
+    .end-game-btn-container {
+      margin-top: 20px;
+      text-align: center;
+    }
+    /* 正常弹幕效果 – 将字体从 2em 调整为 1.6em */
+    .floating-text {
+      position: absolute;
+      font-size: 1.6em;
+      font-family: 'Homemade Apple', cursive;
+      color: #8b0000;
+      font-weight: bold;
+      text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 15px #ff0000;
+      pointer-events: none;
+      z-index: 1000;
+      animation: flashFade 3s forwards, flashColor 0.5s infinite alternate;
+    }
+    @keyframes flashFade {
+      0% { opacity: 1; }
+      10% { opacity: 0.6; }
+      20% { opacity: 1; }
+      30% { opacity: 0.6; }
+      40% { opacity: 1; }
+      50% { opacity: 0.6; }
+      60% { opacity: 0.4; }
+      70% { opacity: 0.3; }
+      80% { opacity: 0.2; }
+      90% { opacity: 0.1; }
+      100% { opacity: 0; }
+    }
+    @keyframes flashColor {
+      0% { color: #8b0000; text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 15px #ff0000; }
+      50% { color: #ff1493; text-shadow: 0 0 10px #ff69b4, 0 0 15px #ff69b4, 0 0 20px #ff69b4; }
+      100% { color: #8b0000; text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 15px #ff0000; }
+    }
+    /* 特殊弹幕效果 – 将字体从 2em 调整为 1.6em */
+    .special-floating-text {
+      position: absolute;
+      font-size: 1.6em;
+      font-family: 'Homemade Apple', cursive;
+      color: #550000;
+      font-weight: bold;
+      text-shadow: 0 0 8px #ff0000, 0 0 12px #ff0000;
+      pointer-events: none;
+      z-index: 1000;
+      left: 0;
+      animation: slowFly 13s linear infinite;
+    }
+    @keyframes slowFly {
+      0% { transform: translateX(0); opacity: 1; }
+      100% { transform: translateX(100vw); opacity: 0.5; }
+    }
+    /* 特殊正确按钮样式 */
+    .special-button {
+      position: absolute;
+      transform: scale(3);
+      z-index: 25;
+      cursor: pointer;
+    }
+    /* 結局畫面样式 – 字体放大 */
+    .ending-container {
+      background: #330000;
+      color: #ff9999;
+      padding: 30px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+    .ending-container h1 {
+      font-size: 3em;
+    }
+    .ending-container p {
+      font-size: 1.8em;
+    }
+    /* 模态框样式 – 弹窗内字体放大 */
+    .modal-content p {
+      font-size: 1.6em;
+    }
+    .modal-content button {
+      font-size: 1.2em;
+    }
+    .modal-content {
+      font-family: 'Homemade Apple', cursive;
+    }
+    /* 模态框 */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 400px;
+      text-align: center;
+      border-radius: 10px;
+    }
+    /* 手机适配 */
+    @media (max-width: 600px) {
+      body {
+        padding: 20px;
+      }
+      h1 {
+        font-size: 1.5em;
+      }
+      button {
+        font-size: 1em;
+        padding: 8px 16px;
+        margin: 5px;
+      }
+      .message {
+        font-size: 1.2em;
+      }
+      .container {
+        width: 90%;
+        padding: 15px;
+      }
+      .ending-container h1 {
+        font-size: 2em;
+      }
+      .ending-container p {
+        font-size: 1.2em;
+      }
+      .modal-content p {
+        font-size: 1.4em;
+      }
+      .modal-content button {
+        font-size: 1em;
+        padding: 8px 16px;
+      }
+      /* 手机端弹幕字体进一步调整 */
+      .special-floating-text, .floating-text {
+        font-size: 1.4em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 主要容器 -->
+  <div class="container" id="container">
+    <h1 id="question">妹妹，你喜歡哥哥嗎？</h1>
+    <div id="options"></div>
+    <p class="message" id="message"></p>
+  </div>
+  <!-- 结束游戏按钮容器 -->
+  <div class="end-game-btn-container">
+    <button id="endGameButton">结束游戏</button>
+  </div>
+  
+  <!-- 屏幕闪烁覆盖层 -->
+  <div id="flashOverlay"></div>
+  
+  <!-- 心跳音频 -->
+  <audio id="heartbeatAudio" loop>
+    <!-- 请替换为你自己的心跳音频文件 URL -->
+    <source src="heartbeat.mp3" type="audio/mpeg">
+    您的浏览器不支持音频播放。
+  </audio>
+  
+  <!-- 模态框：结束游戏流程 -->
+  <div id="endGameModal1" class="modal">
+    <div class="modal-content">
+      <p>真的要放弃我们之间的故事吗？</p>
+      <button id="modal1No">不是</button>
+      <button id="modal1Yes">是</button>
+    </div>
+  </div>
+  <div id="endGameModal2" class="modal">
+    <div class="modal-content">
+      <p>妹妹，妳真的要结束这段约定吗？</p>
+      <button id="modal2Sorry">对不起，我按错了</button>
+      <button id="modal2End">结束游戏</button>
+    </div>
+  </div>
+  <div id="endGameModal3" class="modal">
+    <div class="modal-content">
+      <p>妹妹，留在我身边吧，不然…妳不会想知道后果的。</p>
+      <button id="modal3Love">哥哥我爱妳</button>
+      <button id="modal3Release">放我走哥哥</button>
+    </div>
+  </div>
+  
+  <script>
+    // 题目数组，共6题（删除了原第4、6、7、8题）
+    let questions = [
+      {
+        q: "妹妹，你喜歡哥哥嗎？",
+        options: ["喜歡", "不喜歡"],
+        correct: "喜歡",
+        response: "呵呵，我就知道……妹妹怎麼可能不喜歡哥哥呢？",
+        wrong: [
+          "為什麼選『不喜歡』？ 妳知道我有多在乎妳嗎？",
+          "妹妹，妳的選擇讓我好失望……",
+          "妳難道不知道，只有我才值得妳的全心全意？"
+        ]
+      },
+      {
+        q: "如果哥哥不讓你離開，你會怎麼做？",
+        options: ["聽哥哥的", "反抗"],
+        correct: "聽哥哥的",
+        response: "嗯，這才乖……妹妹只能待在哥哥身邊，哪兒也不能去。",
+        wrong: [
+          "為什麼不聽我的？ 妳就應該服從我。",
+          "妳是不是想逃離我？ 真讓我心寒。",
+          "這個回答讓我失望透頂……"
+        ]
+      },
+      {
+        q: "你會對別的男人笑嗎？",
+        options: ["不會", "會啊"],
+        correct: "不會",
+        response: "很好，妹妹的笑容只屬於哥哥一個人。",
+        wrong: [
+          "妳的笑容，應該只屬於哥哥。",
+          "怎麼能讓其他人看到妳的笑容？",
+          "這样真是讓哥哥心碎。"
+        ]
+      },
+      {
+        q: "你願意一直陪著哥哥嗎？",
+        options: ["願意", "不願意"],
+        correct: "願意",
+        response: "果然，妹妹是屬於我的，永遠都不許離開。",
+        wrong: [
+          "妳怎麼能不陪在我身邊？",
+          "妳不知道我對妳的心有多深嗎？",
+          "妳的拒絕讓我無法接受……"
+        ]
+      },
+      {
+        q: "你願意屬於哥哥一個人嗎？",
+        options: ["願意", "不願意"],
+        correct: "願意",
+        response: "妹妹是哥哥的，這個事實永遠不會改變。",
+        wrong: [
+          "妳怎麼能不屬於我？",
+          "你怎么可以不爱我",
+          "拒绝了哥哥更加不会放开你"
+        ]
+      },
+      {
+        q: "妹妹，我們永遠都會在一起，對吧？",
+        options: ["對", "不對"],
+        correct: "對",
+        response: "呵呵……妹妹，從一開始，妳就無法逃離我了……",
+        wrong: [
+          "妳怎麼能說不？",
+          "錯了，若妳再反駁，我保證讓妳後悔！",
+          "妹妹，妳難道忘了我們的約定？"
+        ]
+      }
+    ];
+    
+    // 用于记录每题是否点击过错误答案
+    let questionWrongFlags = new Array(questions.length).fill(false);
+    
+    // 重新映射特殊弹幕内容，新编号 0~5 分别对应上述题目
+    const specialMessagesMapping = {
+      0: [
+        "為什麼選『不喜歡』？ 妳知道我有多在乎妳嗎？",
+        "妹妹，妳的選擇讓我好失望……",
+        "妳難道不知道，只有我才值得妳全心全意？",
+        "錯了，我早就看出妳心中只有我！",
+        "再錯下去，妳就會失去我！"
+      ],
+      1: [
+        "為什麼不聽我的？ 妳就應該服從我。",
+        "妳是不是想逃離我？ 真讓我心寒。",
+        "這個回答讓我失望透頂……",
+        "妹妹，妳只應該留在我身邊。",
+        "反抗？妳真讓我覺得可笑。"
+      ],
+      2: [
+        "妳的笑容，應該只屬於我。",
+        "怎麼能讓其他人看到妳的笑容？",
+        "這樣的笑容只會讓我心碎。",
+        "妹妹，妳在對誰笑？",
+        "妳只應該笑給我看！"
+      ],
+      3: [
+        "妳怎麼能不陪在我身邊？",
+        "妳不知道我對妳的心有多深嗎？",
+        "妳的拒絕讓我無法接受……",
+        "再錯下去，妳就會失去我！",
+        "妹妹，妳永遠都屬於我！"
+      ],
+      4: [
+        "妳怎麼能不屬於我？",
+        "這種錯誤讓我怒火中燒！",
+        "妳的拒絕只會讓我更愛妳！",
+        "再錯一次，妳就會失去我！",
+        "妹妹，妳永遠只屬於我！"
+      ],
+      5: [
+        "妳怎麼能說不？",
+        "錯了，若妳再反駁，我保證讓妳後悔！",
+        "妹妹，妳難道忘了我們的約定？",
+        "再錯下去，妳永遠逃不掉我！",
+        "妳難道不想永遠在我身邊？"
+      ]
+    };
+    
+    let index = 0;
+    let wrongCount = 0;
+    let specialEventActive = false;
+    let specialBarrageInterval;
+    
+    const heartbeatAudio = document.getElementById("heartbeatAudio");
+    heartbeatAudio.volume = 0;
+    
+    function removeSpecialElements() {
+      document.querySelectorAll(".special-button").forEach(el => el.remove());
+      document.querySelectorAll(".special-floating-text").forEach(el => el.remove());
+      if (specialBarrageInterval) {
+        clearInterval(specialBarrageInterval);
+        specialBarrageInterval = null;
+      }
+    }
+    
+    function loadQuestion() {
+      if (index >= questions.length) return;
+      wrongCount = 0;
+      specialEventActive = false;
+      removeSpecialElements();
+      heartbeatAudio.volume = 0;
+      heartbeatAudio.pause();
+      questionWrongFlags[index] = false;
+      
+      let questionText = document.getElementById("question");
+      let optionsDiv = document.getElementById("options");
+      let message = document.getElementById("message");
+      
+      questionText.innerText = questions[index].q;
+      optionsDiv.innerHTML = "";
+      message.innerText = "";
+      
+      questions[index].options.forEach(option => {
+        let button = document.createElement("button");
+        button.innerText = option;
+        button.onclick = function() { checkAnswer(option, this); };
+        optionsDiv.appendChild(button);
+      });
+    }
+    
+    function checkAnswer(answer, btn) {
+      if (index >= questions.length) return;
+      let correct = questions[index].correct;
+      let message = document.getElementById("message");
+      
+      if (answer === correct) {
+        heartbeatAudio.volume = 0;
+        heartbeatAudio.pause();
+        if (specialEventActive) removeSpecialElements();
+        message.innerText = questions[index].response;
+        let optionsDiv = document.getElementById("options");
+        optionsDiv.innerHTML = "";
+        let nextButton = document.createElement("button");
+        nextButton.innerText = "下一題";
+        nextButton.onclick = nextQuestion;
+        optionsDiv.appendChild(nextButton);
+      } else {
+        wrongCount++;
+        questionWrongFlags[index] = true;
+        heartbeatAudio.volume = Math.min(heartbeatAudio.volume + 0.04, 1);
+        if (heartbeatAudio.paused) heartbeatAudio.play();
+        // 若为第6题且所有题目均曾点击错误，则触发隐藏结局 BE2
+        if (index === questions.length - 1 && questionWrongFlags.every(flag => flag)) {
+          showHiddenEndingBE2();
+          return;
+        }
+        btn.style.backgroundColor = interpolateColor("#ff80bf", "#8B0000", wrongCount / 4);
+        if (wrongCount < 4) {
+          let wrongResponses = questions[index].wrong;
+          let randomIndex = Math.floor(Math.random() * wrongResponses.length);
+          createFloatingText(wrongResponses[randomIndex]);
+        } else {
+          if (!specialEventActive) {
+            triggerSpecialEvent();
+          }
+        }
+      }
+    }
+    
+    function interpolateColor(color1, color2, factor) {
+      if (color1[0] === '#') color1 = color1.slice(1);
+      if (color2[0] === '#') color2 = color2.slice(1);
+      let r1 = parseInt(color1.substring(0,2), 16),
+          g1 = parseInt(color1.substring(2,4), 16),
+          b1 = parseInt(color1.substring(4,6), 16);
+      let r2 = parseInt(color2.substring(0,2), 16),
+          g2 = parseInt(color2.substring(2,4), 16),
+          b2 = parseInt(color2.substring(4,6), 16);
+      let r = Math.round(r1 + factor * (r2 - r1)),
+          g = Math.round(g1 + factor * (g2 - g1)),
+          b = Math.round(b1 + factor * (b2 - b1));
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+    
+    function triggerSpecialEvent() {
+      specialEventActive = true;
+      let optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+      for (let i = 0; i < 20; i++) {
+        let btn = document.createElement("button");
+        btn.innerText = questions[index].correct;
+        btn.classList.add("special-button");
+        btn.style.left = Math.random() * 90 + "vw";
+        btn.style.top = Math.random() * 90 + "vh";
+        btn.onclick = () => { removeSpecialElements(); nextQuestion(); };
+        document.body.appendChild(btn);
+      }
+      let specialMessages = specialMessagesMapping[index] || [
+        "為什麼？",
+        "不要讓我生氣！",
+        "我現在很生氣。"
+      ];
+      let spawnedCount = 0;
+      specialBarrageInterval = setInterval(() => {
+        if (spawnedCount >= 400) {
+          clearInterval(specialBarrageInterval);
+          specialBarrageInterval = null;
+          return;
+        }
+        spawnedCount++;
+        let div = document.createElement("div");
+        div.classList.add("special-floating-text");
+        div.style.left = "0vw";
+        div.style.top = Math.random() * 100 + "vh";
+        let msg = specialMessages[Math.floor(Math.random() * specialMessages.length)];
+        div.innerText = msg;
+        document.body.appendChild(div);
+      }, 300);
+    }
+    
+    function createFloatingText(text) {
+      let floatingText = document.createElement("div");
+      floatingText.classList.add("floating-text");
+      floatingText.innerText = text;
+      floatingText.style.top = Math.random() * 80 + "vh";
+      floatingText.style.left = Math.random() * 80 + "vw";
+      document.body.appendChild(floatingText);
+      setTimeout(() => { floatingText.remove(); }, 3000);
+    }
+    
+    function nextQuestion() {
+      index++;
+      if (index < questions.length) {
+        loadQuestion();
+      } else {
+        showEnding();
+      }
+    }
+    
+    function showEnding() {
+      document.body.style.backgroundColor = "#330000";
+      document.body.style.color = "#ff9999";
+      removeSpecialElements();
+      heartbeatAudio.volume = 0;
+      heartbeatAudio.pause();
+      let container = document.getElementById("container");
+      container.className = "ending-container";
+      container.innerHTML = "<h1>結局</h1>" +
+        "<p>呵呵……妹妹，妳終於通過了我的考驗。從此，無論妳走到哪裡，妳都屬於我。我會一直保護妳，也會緊緊監視妳，這是我們不變的約定。記住，一旦踏上這條路，就再也無法回頭……</p>";
+      let restartContainer = document.querySelector(".end-game-btn-container");
+      restartContainer.innerHTML = "";
+      let restartButton = document.createElement("button");
+      restartButton.id = "restartButton";
+      restartButton.innerText = "重新開始";
+      restartButton.onclick = function() { location.reload(); };
+      restartContainer.appendChild(restartButton);
+    }
+    
+    function showEndingHE() {
+      document.body.style.backgroundColor = "#330000";
+      document.body.style.color = "#ff9999";
+      removeSpecialElements();
+      heartbeatAudio.volume = 0;
+      heartbeatAudio.pause();
+      let container = document.getElementById("container");
+      container.className = "ending-container";
+      container.innerHTML = "<h1>雙向奔赴</h1>" +
+        "<p>呵呵……妹妹，妳那炙熱的愛早已點燃了我的心。當我凝視妳堅定的眼神時，我知道，我們的靈魂早已融為一體。從今往後，我們將攜手奔赴那無盡的深愛之海，永不分離……</p>";
+      let restartContainer = document.querySelector(".end-game-btn-container");
+      restartContainer.innerHTML = "";
+      let restartButton = document.createElement("button");
+      restartButton.id = "restartButton";
+      restartButton.innerText = "重新開始";
+      restartButton.onclick = function() { location.reload(); };
+      restartContainer.appendChild(restartButton);
+    }
+    
+    function showEndingBE() {
+      document.body.style.backgroundColor = "#330000";
+      document.body.style.color = "#ff9999";
+      removeSpecialElements();
+      heartbeatAudio.volume = 0;
+      heartbeatAudio.pause();
+      let container = document.getElementById("container");
+      container.className = "ending-container";
+      container.innerHTML = "<h1>哥哥的金絲雀</h1>" +
+        "<p>呵呵……妹妹，妳竟敢想離開我？從今以後，妳的自由將全然歸我掌控。妳將永遠是我唯一的金絲雀，既被我珍藏，又被我牢牢守護，直到永遠……</p>";
+      let restartContainer = document.querySelector(".end-game-btn-container");
+      restartContainer.innerHTML = "";
+      let restartButton = document.createElement("button");
+      restartButton.id = "restartButton";
+      restartButton.innerText = "重新開始";
+      restartButton.onclick = function() { location.reload(); };
+      restartContainer.appendChild(restartButton);
+    }
+    
+    // 隐藏结局 BE2：如果所有6题均曾点击错误答案，则在第6题再次点击错误时触发
+    function showHiddenEndingBE2() {
+      // 清空页面，确保全黑无任何元素
+      document.body.innerHTML = "";
+      document.body.style.backgroundColor = "#000";
+      document.body.style.color = "#0000FF";
+      removeSpecialElements();
+      heartbeatAudio.volume = 0;
+      heartbeatAudio.pause();
+      
+      // 创建覆盖全屏的图片元素，并进行闪烁效果（每2秒闪1次，每次0.15秒，闪3次）
+      let flashImg = document.createElement("img");
+      flashImg.src = "https://as2.ftcdn.net/v2/jpg/01/38/06/91/1000_F_138069152_qLMqnGyO8FIFlYySSz7btd9foo5aZrSG.jpg";
+      flashImg.style.position = "fixed";
+      flashImg.style.top = "0";
+      flashImg.style.left = "0";
+      flashImg.style.width = "100%";
+      flashImg.style.height = "100%";
+      flashImg.style.objectFit = "cover";
+      flashImg.style.zIndex = "10000";
+      flashImg.style.opacity = "0";
+      document.body.appendChild(flashImg);
+      
+      let flashCount = 0;
+      let flashInterval = setInterval(() => {
+        flashImg.style.opacity = "1";
+        setTimeout(() => {
+          flashImg.style.opacity = "0";
+        }, 150);
+        flashCount++;
+        if (flashCount >= 3) {
+          clearInterval(flashInterval);
+          setTimeout(showHiddenEndingText, 500);
+          setTimeout(() => { flashImg.remove(); }, 1000);
+        }
+      }, 2000);
+    }
+    
+    function showHiddenEndingText() {
+      // 清空页面后直接显示隐藏结局文本和重新开始按钮
+      document.body.innerHTML = "";
+      document.body.style.backgroundColor = "#000";
+      let textDiv = document.createElement("div");
+      textDiv.style.position = "fixed";
+      textDiv.style.top = "50%";
+      textDiv.style.left = "50%";
+      textDiv.style.transform = "translate(-50%, -50%)";
+      textDiv.style.width = "90%";
+      textDiv.style.color = "#0000FF";
+      textDiv.style.fontFamily = "'Courier New', monospace";
+      textDiv.style.fontSize = "2em";
+      textDiv.style.textAlign = "center";
+      textDiv.innerHTML = "妹妹……我真的好失望，我怎麼沒能把妳教成像我那樣深情地愛我？妳的每一次錯誤，都讓我心如刀割……";
+      document.body.appendChild(textDiv);
+      
+      // 在页面右下角添加蓝底黑字的“重新開始”按钮
+      let restartButton = document.createElement("button");
+      restartButton.innerText = "重新開始";
+      restartButton.style.position = "fixed";
+      restartButton.style.right = "20px";
+      restartButton.style.bottom = "20px";
+      restartButton.style.backgroundColor = "#0000FF";
+      restartButton.style.color = "#000";
+      restartButton.style.fontSize = "1.5em";
+      restartButton.style.border = "none";
+      restartButton.style.padding = "10px 20px";
+      restartButton.style.borderRadius = "5px";
+      restartButton.style.cursor = "pointer";
+      restartButton.onclick = function() { location.reload(); };
+      document.body.appendChild(restartButton);
+    }
+    
+    loadQuestion();
+    
+    // 每12秒触发一次闪烁效果，持续0.2秒
+    setInterval(() => {
+      let flashOverlay = document.getElementById("flashOverlay");
+      flashOverlay.style.opacity = "1";
+      setTimeout(() => {
+        flashOverlay.style.opacity = "0";
+      }, 200);
+    }, 12000);
+    
+    // 结束游戏按钮处理
+    document.getElementById("endGameButton").addEventListener("click", function() {
+      showModal("endGameModal1");
+    });
+    
+    function showModal(modalId) {
+      document.getElementById(modalId).style.display = "block";
+    }
+    
+    function hideModal(modalId) {
+      document.getElementById(modalId).style.display = "none";
+    }
+    
+    // 模态框事件处理
+    document.getElementById("modal1No").addEventListener("click", function() {
+      hideModal("endGameModal1");
+    });
+    document.getElementById("modal1Yes").addEventListener("click", function() {
+      hideModal("endGameModal1");
+      showModal("endGameModal2");
+    });
+    document.getElementById("modal2Sorry").addEventListener("click", function() {
+      hideModal("endGameModal2");
+    });
+    document.getElementById("modal2End").addEventListener("click", function() {
+      hideModal("endGameModal2");
+      showModal("endGameModal3");
+    });
+    document.getElementById("modal3Love").addEventListener("click", function() {
+      hideModal("endGameModal3");
+      showEndingHE();
+    });
+    document.getElementById("modal3Release").addEventListener("click", function() {
+      hideModal("endGameModal3");
+      showEndingBE();
+    });
+  </script>
+  
+  <!-- 模态框HTML -->
+  <div id="endGameModal1" class="modal">
+    <div class="modal-content">
+      <p>真的要放弃我们之间的故事吗？</p>
+      <button id="modal1No">不是</button>
+      <button id="modal1Yes">是</button>
+    </div>
+  </div>
+  <div id="endGameModal2" class="modal">
+    <div class="modal-content">
+      <p>妹妹，妳真的要结束这段约定吗？</p>
+      <button id="modal2Sorry">对不起，我按错了</button>
+      <button id="modal2End">结束游戏</button>
+    </div>
+  </div>
+  <div id="endGameModal3" class="modal">
+    <div class="modal-content">
+      <p>妹妹，留在我身边吧，不然…妳不会想知道后果的。</p>
+      <button id="modal3Love">哥哥我爱妳</button>
+      <button id="modal3Release">放我走哥哥</button>
+    </div>
+  </div>
+</body>
+</html>
